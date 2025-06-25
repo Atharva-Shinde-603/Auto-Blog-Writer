@@ -1,24 +1,19 @@
-from langchain import LLMChain
-from langchain.prompts import PromptTemplate
-from langchain.chat_models import ChatOpenAI
-import os
-from dotenv import load_dotenv
+import google.generativeai as genai
 
-#load api key
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Configure Gemini API key
+genai.configure(api_key="AIzaSyB8QovhbvubJEdfDcQI0e2Q--Fj_wGZhB0")
 
-def generate_blog(topic):
-    """Generates a full blog post based on given topic with help of GPT-4 """
-    template="""Write a detailed blog post on the topic "{topic}".
-      - Include an engaging introduction
-      - Provide 3 key points with explanations
-      - Use SEO-friendly keywords
-      - End with a conclusion and call to action 
-        Return the blog in a structured  markdown format  """
-    
-    prompt = PromptTemplate(input_variables=['topic'], template=template)
-    llm= ChatOpenAI(model_name="gpt-4", openai_api_key=OPENAI_API_KEY)
-    chain=LLMChain(llm=llm, prompt=prompt)
+# Initialize Gemini model
+model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
 
-    return chain.run(topic=topic)
+def generate_blog(topic: str) -> str:
+    prompt = f"""
+    Write a detailed and engaging blog post on the topic: "{topic}".
+    The blog should be informative, well-structured, and reader-friendly.
+    Include an introduction, several key points, and a conclusion.
+    """
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"❌ Error generating blog: {e}"
